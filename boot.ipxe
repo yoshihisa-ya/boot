@@ -1,0 +1,65 @@
+#!ipxe
+
+# reference: http://boot.salstar.sk/
+
+set debmirror https://deb.debian.org/debian/
+
+:main
+menu iPXE boot menu
+item --gap --        ----- Linux -----
+item --key d debian  Debian      [d]
+#item --key d arch    Arch Linux [a]
+#item --key d fedora  Fedora [f]
+#item --key u ubuntu  Ubuntu [u]
+item --gap --        ----- Tools -----
+item --key n netboot netboot.xyz [n]
+#item --key m memtest Memtest86+ [m]
+item --gap --        ----- Other -----
+item --key x exit    Exit   [x]
+choose --default exit --timeout 30000 target && goto ${target}
+goto ${target}
+
+:debian
+set os Debian
+set os_lower debian
+menu ${os} versions
+item --key s sid      ${os} sid         (unstalbe)  [s]
+item --key 3 trixie   ${os} trixie      (testing)   [3]
+item --key 2 bookworm ${os} 12 bookworm (stable)    [2]
+item --key 1 bullseye ${os} 11 bullseye (oldstable) [1]
+choose --default sid --timeout 10000 version || exit 0
+goto types
+
+:types
+set dir dists/${version}/main/installer-amd64/current/images/netboot/
+menu ${os} ${version} boot parameters
+item --key e expert  ${os} ${version} expert install     [e]
+item --key i install ${os} ${version} text-based install [i]
+item --key g gtk     ${os} ${version} graphical install  [g]
+choose --default expert --timeout 10000 type || exit 0
+goto ${type}
+
+:install
+set dir ${dir}${installer}${target}-installer/amd64/
+imgfree
+imgtrust --allow
+kernel ${debmirror}${dir}linux
+initrd ${debmirror}${dir}initrd.gz
+imgargs linux initrd=initrd.gz ${params} -- quiet
+boot
+
+:gtk
+set params video=vesa:mtrr,ywrap vga=791
+set installer gtk/
+goto install
+
+:expert
+set params priority=low
+goto install
+
+:netboot
+iseq ${platform} efi && goto netboot_efi || goto netboot_bios
+:netboot_efi
+chain --autofree https://boot.netboot.xyz/ipxe/netboot.xyz.efi
+:netboot_bios
+chain --autofree https://boot.netboot.xyz/ipxe/netboot.xyz.lkrn
