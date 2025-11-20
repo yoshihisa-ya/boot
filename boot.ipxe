@@ -23,10 +23,10 @@ goto ${target}
 set os Debian
 set os_lower debian
 menu ${os} versions
-item --key s sid      ${os} sid         (unstalbe)  [s]
-item --key 3 trixie   ${os} trixie      (testing)   [3]
-item --key 2 bookworm ${os} 12 bookworm (stable)    [2]
-item --key 1 bullseye ${os} 11 bullseye (oldstable) [1]
+item --key s sid      ${os} sid         (unstalbe)     [s]
+item --key 3 trixie   ${os} 13 trixie   (stable)       [3]
+item --key 2 bookworm ${os} 12 bookworm (oldstable)    [2]
+item --key 1 bullseye ${os} 11 bullseye (oldoldstable) [1]
 choose --default sid --timeout 10000 version || exit 0
 goto types
 
