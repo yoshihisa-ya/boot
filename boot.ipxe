@@ -2,9 +2,19 @@
 
 # reference: http://boot.salstar.sk/
 
-set debmirror https://deb.debian.org/debian/
+# https://forum.ipxe.org/showthread.php?tid=7960
+set sp:hex 20 && set sp ${sp:string}
+
+# Chainload the self-built iPXE firmware
+iseq ${version} 1.21.1+${sp}(g3f4f8) && goto main ||
+iseq ${platform} efi && goto ipxe_efi || goto ipxe_bios
+:netboot_efi
+chain --autofree http://${next-server}/ipxe.efi
+:netboot_bios
+chain --autofree http://${next-server}/undionly.kpxe
 
 :main
+set debmirror https://deb.debian.org/debian/
 menu iPXE boot menu
 item --gap --        ----- Linux -----
 item --key d debian  Debian      [d]
